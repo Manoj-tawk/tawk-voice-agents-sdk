@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Agent SDK - Browser Example</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+
+        .status-dot.connected {
+            background: #10b981;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .btn-recording {
+            background: #10b981;
+            animation: recording-pulse 1.5s infinite;
+        }
+
+        @keyframes recording-pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .chat-container {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            max-width: 80%;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.assistant {
+            background: white;
+            color: #333;
+            border: 1px solid #e5e7eb;
+        }
+
+        .message.system {
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 14px;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ Voice Agent SDK</h1>
+        <p class="subtitle">Speak naturally with AI</p>
+
+        <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Disconnected</span>
+        </div>
+
+        <div class="controls">
+            <button id="connectBtn" class="btn-primary" onclick="connect()">Connect</button>
+            <button id="recordBtn" class="btn-primary" onclick="toggleRecording()" disabled>Start Talking</button>
+            <button id="interruptBtn" class="btn-danger" onclick="interrupt()" disabled>Interrupt</button>
+        </div>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message system">
+                Click "Connect" to start a conversation
+            </div>
+        </div>
+
+        <div class="input-group">
+            <input type="text" id="textInput" placeholder="Or type a message..." disabled>
+            <button onclick="sendText()" class="btn-primary" id="sendBtn" disabled>Send</button>
+        </div>
+
+        <div class="metrics">
+            <div class="metric">
+                <div class="metric-label">Latency</div>
+                <div class="metric-value" id="latency">-</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Messages</div>
+                <div class="metric-value" id="messages">0</div>
+            </div>
+            <div class="metric">
+                <div class="metric-label">Status</div>
+                <div class="metric-value" id="agentStatus">Idle</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/voice-agent-sdk@latest/dist/client.js"></script>
+    <script>
+        let sdk = null;
+        let isRecording = false;
+        let messageCount = 0;
+        let lastTimestamp = 0;
+
+        // Initialize SDK
+        function initSDK() {
+            return new VoiceAgentClient({
+                apiKey: 'demo-api-key',  // Replace with your API key
+                url: 'ws://localhost:8080',  // Replace with your server URL
+                stt: 'deepgram',
+                llm: 'gpt-4o-mini',
+                tts: 'elevenlabs',
+                voice: 'alloy',
+                instructions: 'You are a helpful AI assistant. Keep responses concise and friendly.',
+                autoPlayAudio: true,
+                autoReconnect: true
+            });
+        }
+
+        // Connect to server
+        async function connect() {
+            try {
+                updateStatus('connecting', 'Connecting...');
+                document.getElementById('connectBtn').disabled = true;
+
+                sdk = initSDK();
+
+                // Setup event handlers
+                setupEventHandlers();
+
+                // Connect
+                await sdk.connect();
+
+            } catch (error) {
+                console.error('Connection error:', error);
+                addSystemMessage('Failed to connect: ' + error.message);
+                updateStatus('disconnected', 'Disconnected');
+                document.getElementById('connectBtn').disabled = false;
+            }
+        }
+
+        // Setup SDK event handlers
+        function setupEventHandlers() {
+            sdk.on('connected', () => {
+                console.log('Connected to server');
+            });
+
+            sdk.on('session.created', (session) => {
+                console.log('Session created:', session.id);
+                updateStatus('connected', `Connected (${session.id.substring(0, 8)}...)`);
+                document.getElementById('recordBtn').disabled = false;
+                document.getElementById('textInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                addSystemMessage('Connected! Start talking or type a message.');
+            });
+
+            sdk.on('speech.started', () => {
+                console.log('Speech started');
+                document.getElementById('agentStatus').textContent = 'Listening';
+                lastTimestamp = Date.now();
+            });
+
+            sdk.on('speech.stopped', () => {
+                console.log('Speech stopped');
+                document.getElementById('agentStatus').textContent = 'Processing';
+            });
+
+            sdk.on('transcription', (text) => {
+                console.log('Transcription:', text);
+                addMessage('user', text);
+                messageCount++;
+                document.getElementById('messages').textContent = messageCount;
+            });
+
+            sdk.on('response.text', (text) => {
+                // Show streaming response
+                updateLastAssistantMessage(text);
+            });
+
+            sdk.on('response.done', () => {
+                console.log('Response complete');
+                document.getElementById('agentStatus').textContent = 'Idle';
+                
+                if (lastTimestamp) {
+                    const latency = Date.now() - lastTimestamp;
+                    document.getElementById('latency').textContent = latency + 'ms';
+                }
+                
+                finalizeLastAssistantMessage();
+                document.getElementById('interruptBtn').disabled = false;
+            });
+
+            sdk.on('audio.playing', () => {
+                document.getElementById('agentStatus').textContent = 'Speaking';
+            });
+
+            sdk.on('tool.call', (toolCall) => {
+                console.log('Tool call:', toolCall);
+                addSystemMessage(`Calling tool: ${toolCall.name}`);
+            });
+
+            sdk.on('error', (error) => {
+                console.error('SDK error:', error);
+                addSystemMessage('Error: ' + error.message);
+            });
+
+            sdk.on('disconnected', () => {
+                console.log('Disconnected from server');
+                updateStatus('disconnected', 'Disconnected');
+                stopRecording();
+                document.getElementById('connectBtn').disabled = false;
+                document.getElementById('recordBtn').disabled = true;
+                document.getElementById('interruptBtn').disabled = true;
+                document.getElementById('textInput').disabled = true;
+                document.getElementById('sendBtn').disabled = true;
+            });
+        }
+
+        // Toggle recording
+        async function toggleRecording() {
+            if (!isRecording) {
+                try {
+                    await sdk.startRecording();
+                    isRecording = true;
+                    document.getElementById('recordBtn').textContent = 'Stop Talking';
+                    document.getElementById('recordBtn').classList.add('btn-recording');
+                    addSystemMessage('🎤 Recording started...');
+                } catch (error) {
+                    console.error('Failed to start recording:', error);
+                    addSystemMessage('Microphone access denied');
+                }
+            } else {
+                stopRecording();
+            }
+        }
+
+        function stopRecording() {
+            if (sdk && isRecording) {
+                sdk.stopRecording();
+                isRecording = false;
+                document.getElementById('recordBtn').textContent = 'Start Talking';
+                document.getElementById('recordBtn').classList.remove('btn-recording');
+                addSystemMessage('🔇 Recording stopped');
+            }
+        }
+
+        // Send text message
+        function sendText() {
+            const input = document.getElementById('textInput');
+            const text = input.value.trim();
+            
+            if (text && sdk) {
+                sdk.sendText(text);
+                input.value = '';
+                addMessage('user', text);
+                lastTimestamp = Date.now();
+            }
+        }
+
+        // Interrupt current response
+        function interrupt() {
+            if (sdk) {
+                sdk.interrupt();
+                addSystemMessage('⚡ Interrupted');
+                document.getElementById('agentStatus').textContent = 'Idle';
+            }
+        }
+
+        // UI helper functions
+        function updateStatus(status, text) {
+            const dot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            
+            dot.className = 'status-dot';
+            if (status === 'connected') {
+                dot.classList.add('connected');
+            }
+            
+            statusText.textContent = text;
+        }
+
+        let currentAssistantMessage = null;
+
+        function addMessage(role, text) {
+            const container = document.getElementById('chatContainer');
+            const message = document.createElement('div');
+            message.className = `message ${role}`;
+            message.textContent = text;
+            container.appendChild(message);
+            container.scrollTop = container.scrollHeight;
+
+            if (role === 'assistant') {
+                currentAssistantMessage = message;
+            }
+        }
+
+        function updateLastAssistantMessage(text) {
+            if (!currentAssistantMessage) {
+                addMessage('assistant', text);
+            } else {
+                currentAssistantMessage.textContent += text;
+                document.getElementById('chatContainer').scrollTop = 
+                    document.getElementById('chatContainer').scrollHeight;
+            }
+        }
+
+        function finalizeLastAssistantMessage() {
+            currentAssistantMessage = null;
+            messageCount++;
+            document.getElementById('messages').textContent = messageCount;
+        }
+
+        function addSystemMessage(text) {
+            const container = document.getElementById('chatContainer');
+            const message = document.createElement('div');
+            message.className = 'message system';
+            message.textContent = text;
+            container.appendChild(message);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // Handle Enter key in text input
+        document.getElementById('textInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendText();
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (sdk) {
+                sdk.disconnect();
+            }
+        });
+    </script>
+</body>
+</html>
