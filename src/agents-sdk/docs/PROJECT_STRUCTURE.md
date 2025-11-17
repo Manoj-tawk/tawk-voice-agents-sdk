@@ -1,0 +1,311 @@
+# Project Structure
+
+This document describes the organization of the Tawk Agents SDK repository.
+
+## Directory Structure
+
+```
+tawk-agents-sdk/
+├── src/                    # Source code
+│   ├── agent.ts           # Core agent implementation
+│   ├── approvals.ts       # Human-in-the-loop system
+│   ├── guardrails.ts      # Safety and validation
+│   ├── index.ts           # Main exports
+│   ├── langfuse.ts        # Langfuse integration
+│   ├── mcp.ts             # Model Context Protocol
+│   ├── session.ts         # Session management
+│   ├── tracing.ts         # Tracing utilities
+│   └── types.ts           # TypeScript types
+│
+├── tests/                  # Test suite
+│   ├── run-all-tests.ts   # Test runner
+│   ├── 01-basic-agent.test.ts
+│   ├── 02-multi-agent.test.ts
+│   ├── 03-streaming.test.ts
+│   ├── 04-guardrails.test.ts
+│   ├── 05-sessions.test.ts
+│   ├── 06-langfuse-tracing.test.ts
+│   ├── 07-advanced-tool-calling.test.ts
+│   ├── 08-race-agents.test.ts
+│   └── README.md          # Testing documentation
+│
+├── examples/              # Example code
+│   └── complete-examples.ts
+│
+├── docs/                  # Documentation
+│   ├── API.md            # API reference
+│   ├── CORE_CONCEPTS.md  # Core concepts
+│   ├── GETTING_STARTED.md # Getting started guide
+│   ├── LANGFUSE.md       # Langfuse integration
+│   ├── LANGFUSE_SETUP.md # Quick Langfuse setup
+│   └── TESTING.md        # Testing guide
+│
+├── dist/                  # Compiled output (generated)
+│
+├── .eslintrc.json        # ESLint configuration
+├── .prettierrc.json      # Prettier configuration
+├── .gitignore            # Git ignore rules
+├── .npmignore            # npm ignore rules
+│
+├── tsconfig.json         # TypeScript configuration
+├── package.json          # Package metadata
+├── package-lock.json     # Dependency lock file
+│
+├── README.md             # Main documentation
+├── CHANGELOG.md          # Version history
+├── CONTRIBUTING.md       # Contribution guidelines
+├── LICENSE               # MIT License
+│
+└── docker-compose.yml    # Redis + MongoDB for testing
+```
+
+## Core Files
+
+### `/src`
+
+**agent.ts** (752 lines)
+- Core agent class and implementation
+- `Agent` class with instructions, tools, handoffs
+- `run()` and `runStream()` functions
+- Session interface and management
+- Tool execution and handoff logic
+
+**types.ts** (450+ lines)
+- All TypeScript type definitions
+- Custom error classes
+- Message and metadata interfaces
+- Configuration types
+
+**guardrails.ts** (530 lines)
+- Built-in guardrail implementations
+- Content safety, PII detection, length checks
+- Topic relevance, format validation
+- Rate limiting, language detection
+- Custom guardrail support
+
+**session.ts** (900+ lines)
+- Session management implementations
+- Memory, Redis, MongoDB, Hybrid adapters
+- Session interface and utilities
+- Auto-summarization support
+
+**langfuse.ts** (280 lines)
+- Langfuse integration
+- Trace creation and management
+- Generation and span tracking
+- Automatic initialization
+
+**tracing.ts** (200+ lines)
+- Generic tracing system
+- Trace manager and callbacks
+- Langfuse and console callbacks
+
+**mcp.ts** (150+ lines)
+- Model Context Protocol support
+- MCP server management
+- Tool discovery and execution
+
+**approvals.ts** (200+ lines)
+- Human-in-the-loop system
+- Approval manager and handlers
+- CLI, webhook, and auto-approve handlers
+
+**index.ts** (160 lines)
+- Main export file
+- Re-exports all public APIs
+- Version export
+
+### `/tests`
+
+**run-all-tests.ts**
+- Test runner that executes all test suites
+- 8 comprehensive test files covering all major features
+
+**Test Files:**
+- `01-basic-agent.test.ts` - Basic agent operations, tool calling, token tracking
+- `02-multi-agent.test.ts` - Multi-agent coordination and handoffs
+- `03-streaming.test.ts` - Streaming responses and real-time output
+- `04-guardrails.test.ts` - Guardrails validation and content safety
+- `05-sessions.test.ts` - Session management and memory persistence
+- `06-langfuse-tracing.test.ts` - Langfuse integration and automatic tracing
+- `07-advanced-tool-calling.test.ts` - Sequential and parallel tool execution patterns
+- `08-race-agents.test.ts` - Parallel agent execution, fallback patterns, race conditions
+
+All tests include real API calls with OpenAI gpt-4o-mini model.
+
+### `/examples`
+
+**complete-examples.ts** (600+ lines)
+- Comprehensive usage examples
+- All major features demonstrated
+- Copy-paste ready code
+
+### `/docs`
+
+**GETTING_STARTED.md**
+- Installation and setup
+- First agent example
+- Common patterns
+
+**CORE_CONCEPTS.md**
+- Deep dive into concepts
+- Best practices
+- Design patterns
+
+**API.md**
+- Complete API reference
+- All functions, classes, types
+- Usage examples
+
+**TESTING.md**
+- Testing guide
+- How to run tests
+- Test coverage
+
+**LANGFUSE.md**
+- Langfuse integration guide
+- Setup and configuration
+- Advanced usage
+
+## Build Output
+
+### `/dist` (generated by `npm run build`)
+
+```
+dist/
+├── index.js
+├── index.d.ts
+├── agent.js
+├── agent.d.ts
+├── guardrails.js
+├── guardrails.d.ts
+└── ... (all compiled files)
+```
+
+## Configuration Files
+
+### TypeScript Configuration
+
+**tsconfig.json**
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": true,
+    // ... more options
+  }
+}
+```
+
+### ESLint Configuration
+
+**.eslintrc.json**
+- TypeScript-specific rules
+- Best practices enforcement
+- Code quality checks
+
+### Prettier Configuration
+
+**.prettierrc.json**
+- Code formatting rules
+- Consistent style
+
+## Package Configuration
+
+**package.json** Key Sections:
+
+```json
+{
+  "name": "@tawk-agents-sdk/core",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node tests/test-all.ts",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "files": ["dist", "README.md", "LICENSE"]
+}
+```
+
+## Git Configuration
+
+**.gitignore**
+- `/node_modules`
+- `/dist`
+- `.env`
+- `*.log`
+
+**.npmignore**
+- `/src` (only ship compiled code)
+- `/tests`
+- `/examples`
+- `/docs` (except README)
+- Configuration files
+
+## Scripts
+
+### `npm run build`
+Compiles TypeScript to JavaScript in `/dist`
+
+### `npm test`
+Runs complete test suite with real API calls
+
+### `npm run lint`
+Checks code for style and quality issues
+
+### `npm run format`
+Auto-formats code with Prettier
+
+### `npm run example`
+Runs example code
+
+## File Sizes
+
+Accurate counts (as of latest):
+
+- Total source code: **6,470 lines** (src/*.ts)
+- Tests: **8 test files** with comprehensive coverage
+- Documentation: **4,301 lines** across 9 markdown files
+- Examples: 1 complete example file
+
+## Dependencies
+
+### Production
+- `langfuse` - Tracing
+- AI SDK providers
+
+### Development
+- `typescript` - Type checking
+- `ts-node` - Running TypeScript
+- `eslint` - Linting
+- `prettier` - Formatting
+- `dotenv` - Environment variables
+- `nodemon` - Auto-restart
+
+## Release Process
+
+1. Update version in `package.json`
+2. Update `CHANGELOG.md`
+3. Run `npm run build`
+4. Run `npm test`
+5. Run `npm run lint`
+6. Commit changes
+7. Tag release: `git tag v1.0.0`
+8. Push: `git push --tags`
+9. Publish: `npm publish`
+
+## Contributing
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for:
+- Development setup
+- Coding standards
+- Pull request process
+- Testing requirements
+

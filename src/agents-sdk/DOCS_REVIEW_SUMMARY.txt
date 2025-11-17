@@ -1,0 +1,147 @@
+# DOCUMENTATION REVIEW - CRITICAL ISSUES FOUND
+
+## SEVERITY: HIGH - MULTIPLE MISMATCHES
+
+==================================================
+ISSUE #1: NON-EXISTENT TEST FILES DOCUMENTED
+==================================================
+
+### Files Claiming Non-Existent Tests:
+
+1. docs/PROJECT_STRUCTURE.md (Lines 118-133)
+   Claims 16 test files exist, but only 7 actually exist:
+   
+   MISSING:
+   - 09-structured-output.test.ts ❌
+   - 10-error-handling.test.ts ❌
+   - 11-complete-integration.test.ts ❌
+   - 12-complex-scenarios.test.ts ❌
+   - 13-multi-turn-multi-model.test.ts ❌
+   - 14-multi-model-handoff.test.ts ❌
+   - 16-auto-summarization.test.ts ❌
+   - 17-session-storage-e2e.test.ts ❌
+   - 18-performance-benchmark.test.ts ❌
+   - 19-model-speed-comparison.test.ts ❌
+
+2. docs/TESTING.md (Lines 54-85)
+   References missing test files:
+   - Lines 75, 78, 81, 84: Non-existent files
+
+3. docs/TESTING.md (Lines 99-102)
+   Claims test 09-structured-output exists ❌
+
+==================================================
+ISSUE #2: INCORRECT TEST FILE REFERENCES
+==================================================
+
+### PROJECT_STRUCTURE.md
+- Line 116: Claims "19 comprehensive test files"
+- ACTUAL: Only 7 test files exist
+- Line 21-22: Says "test-all.ts" and "test-langfuse.ts"
+- ACTUAL: File is "run-all-tests.ts"
+
+==================================================
+ISSUE #3: INSTALLATION INSTRUCTIONS BROKEN
+==================================================
+
+ALL docs say:
+```bash
+npm install @tawk-agents-sdk/core ai @ai-sdk/openai zod
+```
+
+This FAILS because package not published to npm!
+
+Affected files:
+- docs/GETTING_STARTED.md (Line 14)
+- docs/API.md (implied by examples)
+- ALL example code blocks
+
+==================================================
+ISSUE #4: INCONSISTENT FILE SIZES/METRICS
+==================================================
+
+### PROJECT_STRUCTURE.md Claims:
+- Line 274: "Total source code: ~3,500 lines"
+- ACTUAL: 6,470 lines (almost 2x wrong!)
+
+- Line 275: "Tests: ~700 lines"  
+- ACTUAL: 7 test files = ~2,500 lines
+
+- Line 276: "Documentation: ~15,000 words"
+- ACTUAL: 4,301 lines
+
+==================================================
+ISSUE #5: DOCS REFERENCE WRONG FILE STRUCTURE
+==================================================
+
+### PROJECT_STRUCTURE.md (Lines 21-23):
+```
+├── tests/
+│   ├── test-all.ts        ❌ WRONG
+│   ├── test-langfuse.ts   ❌ WRONG
+```
+
+ACTUAL FILES:
+- run-all-tests.ts ✅
+- 01-basic-agent.test.ts ✅
+- 02-multi-agent.test.ts ✅
+... (7 total)
+
+==================================================
+ISSUE #6: IMPORT INCONSISTENCIES
+==================================================
+
+Most docs correctly use:
+```typescript
+import { Agent } from '@tawk-agents-sdk/core';
+```
+
+But this won't work until package is published OR
+users set up path aliases locally!
+
+==================================================
+ISSUE #7: MISSING TEST DESCRIPTIONS
+==================================================
+
+docs/TESTING.md shows table (Lines 91-102) with:
+- 09-structured-output.test.ts ❌ Doesn't exist
+- 10-error-handling.test.ts ❌ Doesn't exist
+- 11-complete-integration.test.ts ❌ Doesn't exist  
+- 12-complex-scenarios.test.ts ❌ Doesn't exist
+
+But MISSING from table:
+- 07-advanced-tool-calling.test.ts ✅ EXISTS but not documented!
+
+==================================================
+RECOMMENDATIONS
+==================================================
+
+FIX PRIORITY 1 (CRITICAL):
+1. Update PROJECT_STRUCTURE.md - List only 7 existing tests
+2. Update TESTING.md - Remove references to missing tests
+3. Add docs for 07-advanced-tool-calling.test.ts
+4. Fix "test-all.ts" → "run-all-tests.ts" everywhere
+
+FIX PRIORITY 2 (HIGH):
+5. Fix line count metrics in PROJECT_STRUCTURE.md
+6. Add installation note about npm package status
+7. Update all examples to clarify setup requirements
+
+FIX PRIORITY 3 (MEDIUM):
+8. Create missing test files OR remove from docs
+9. Add .gitignore patterns to PROJECT_STRUCTURE.md
+10. Update tsconfig.json docs to show path aliases
+
+==================================================
+VERIFICATION CHECKLIST
+==================================================
+
+After fixes, verify:
+- [ ] Every test file mentioned exists
+- [ ] Every npm command works
+- [ ] Every code example uses correct imports
+- [ ] Line counts match reality
+- [ ] No broken file references
+- [ ] Installation instructions accurate
+
+==================================================
